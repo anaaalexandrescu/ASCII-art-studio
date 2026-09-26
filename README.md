@@ -71,7 +71,3 @@ python main.py
 The processing functions are covered by an automated `pytest` suite. Rather than relying only on real images — where the exact expected output is hard to verify by hand — tests use small, manually constructed matrices with known values, so operations like grayscale conversion, resizing, inversion, and character mapping can be checked directly.
 
 Pixel access is tested using a `FakePixels` mock that mirrors Pillow's indexing (`pixels[x, y]`), and video processing is tested using synthetic frames built with NumPy, avoiding any dependency on external video files.
-
-## Notes
-
-This was developed as an academic project (Digital Multimedia course, POLITEHNICA Bucharest). The full technical report (in Romanian) covers the theoretical background — RGB representation, the Sobel operator, contrast normalization — in more depth.
