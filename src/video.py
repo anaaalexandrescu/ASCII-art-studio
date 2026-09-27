@@ -3,24 +3,24 @@ import src.image as image
 
 def frame_to_ascii(frame, new_width=150, do_invert=False):
     """
-    converteste un frame video numpy array BGR intr un frame ASCII
- 
-    reface acelasi pipeline ca image.ascii() adaptat pt video: foloseste
-    cv2.resize cu interpolare in loc de nearest-neighbor manual
-    (mai rapid), si nu incarca nimic de pe disk
-    frame ul vine deja in memorie de la camera sau de la un fisier video
-  
-    pixels e transpus din (height, width, 3) in (width, height, 3)
-    ca sa respecte pixels[x, y] folosit de image.grayscale()
- 
+    converts a video frame numpy array BGR into an ASCII frame
+
+    recreates the same pipeline as image.ascii() adapted for video: uses
+    cv2.resize with interpolation instead of manual nearest-neighbor
+    (faster), and does not load anything from disk
+    the frame already comes in memory from the camera or from a video file
+
+    pixels is transposed from (height, width, 3) to (width, height, 3)
+    to respect pixels[x, y] used by image.grayscale()
+
     args:
-        frame: un frame BGR asa cum il returneaza cv2 
-        new_width: latimea tinta a output ului ASCII in charactere, default 150
-        do_invert: daca True, inverseaza valorile grayscale inainte de procesare
- 
+        frame: a BGR frame as returned by cv2
+        new_width: target width of the ASCII output in characters, default 150
+        do_invert: if True, inverts the grayscale values before processing
+
     returns:
-        tuplu (text, rgb_matrix) - text e string ul ASCII rezultat, rgb_matrix
-        e matrice de tupluri (r, g, b) aliniata la acelasi grid ca text ul
+        tuple (text, rgb_matrix) - text is the resulting ASCII string, rgb_matrix
+        is a matrix of tuples (r, g, b) aligned to the same grid as the text
     """
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     height, width, _ = rgb_frame.shape
@@ -32,9 +32,9 @@ def frame_to_ascii(frame, new_width=150, do_invert=False):
         new_height = 1
     rgb_resized = cv2.resize(rgb_frame, (new_width, new_height), interpolation=cv2.INTER_AREA)
 
-    # image.grayscale() foloseste pixels[x, y]
-    # în timp ce numpy foloseste [y, x]
-    # transpune primele 2 axe
+    # image.grayscale() uses pixels[x, y]
+    # while numpy uses [y, x]
+    # transpose the first 2 axes
     pixels = rgb_resized.transpose(1, 0, 2)
     gray = image.grayscale(pixels, new_height, new_width)
     gray = image.gray_contrast(gray)

@@ -5,10 +5,10 @@ from src.gui_widgets import STYLE_SHEET
 
 def main():
     """
-    punctul de intrare al aplicatiei
+    the application's entry point
 
-    creeaza obiectul QApplication, initializeaza si afiseaza fereastra
-    principala MainWindow, apoi porneste event loop ul PyQt
+    creates the QApplication object, initializes and shows the main
+    MainWindow window, then starts the PyQt event loop
     """
     app = QApplication(sys.argv)
     app.setStyleSheet(STYLE_SHEET)

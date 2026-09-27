@@ -5,16 +5,16 @@ CHAR_SET = "W8&B$@%#*+=-:. "
 
 def load(path):
     """
-    incarca o imagine de pe disk si returneaza pixel access object ul plus dimensiunile.
-    convertesc la RGB pt format consistent pe 3 canale pt tot ce
-    urmeaza, indiferent de modul original al pozei.
+    loads an image from disk and returns the pixel access object plus the dimensions.
+    converts to RGB for a consistent 3-channel format for everything
+    that follows, regardless of the original mode of the image.
 
     args:
-        path: calea catre fisierul imagine
+        path: path to the image file
 
     returns:
-        tuplu (pixels, width, height) - pixels e un obiect PixelAccess
-        indexat ca pixels[x, y], width/height sunt dimensiunile
+        tuple (pixels, width, height) - pixels is a PixelAccess object
+        indexed as pixels[x, y], width/height are the dimensions
     """
     image = Image.open(path)
     image = image.convert("RGB")
@@ -24,19 +24,19 @@ def load(path):
 
 def grayscale(pixels, height, width):
     """
-    transf o matrice de pixeli rgb in grayscale folosind ponderi.
+    converts a matrix of rgb pixels to grayscale using weights.
 
-    am folosit formula standard 0.299R + 0.587G + 0.114B: pune mai mult 
-    accent pe verde pt ca ochiul uman e mai sensibil la acesta. da rezultate mult
-    mai bune decat o medie simpla intre cele 3 canale.
+    i used the standard formula 0.299R + 0.587G + 0.114B: it puts more
+    weight on green because the human eye is more sensitive to it. it gives much
+    better results than a simple average between the 3 channels.
 
     args:
         pixels: PixelAccess object
-        height: inaltimea imaginii
-        width: latimea imaginii
+        height: image height
+        width: image width
 
     returns:
-        matrice de valori grayscale float
+        matrix of grayscale float values
     """
     final = []
     for j in range(height):
@@ -50,18 +50,18 @@ def grayscale(pixels, height, width):
 
 def gray_contrast(mat):
     """
-    intinde contrastul ca sa acopere tot range-ul 0 255
+    stretches the contrast to cover the whole 0-255 range
 
-    gasesc min si max in matrice si re scalez liniar fiecare valoare, astfel
-    ca pixelul cel mai inchis devine 0 si cel mai deschis devine 255. imbunatateste
-    vizual output ul ASCII, mai ales pe poze care nu folosesc deja tot spectrul
+    finds min and max in the matrix and linearly rescales each value, so
+    that the darkest pixel becomes 0 and the lightest becomes 255. visually
+    improves the ASCII output, especially on images that don't already use the whole spectrum
 
     args:
-        mat: matrice cu valori grayscale
+        mat: matrix with grayscale values
 
     returns:
-        o noua lista cu valorile cu contrast intins, sau matricea originala
-        neschimbata daca toti pixelii au aceeasi valoare (guard pt div by zero)
+        a new list with the stretched-contrast values, or the original matrix
+        unchanged if all pixels have the same value (guard for div by zero)
     """
     vals = [val for row in mat for val in row]
     min_val = min(vals)
@@ -81,20 +81,20 @@ def gray_contrast(mat):
 
 def sobel(mat, height, width):
     """
-    aplica operatorul sobel pt edge detection pe o matrice grayscale
+    applies the sobel operator for edge detection on a grayscale matrix
 
-    fac convolutie cu 2 kernele 3x3 (gx pt gradient orizontal, gy pt vertical)
-    ca sa estimez gradientul de intensitate in fiecare pixel. magnitudinea 
-    finala e norma euclidiana din gx si gy. la margini - clamping 
-    (min/max) in loc de padding cu zero
+    performs convolution with 2 3x3 kernels (gx for horizontal gradient, gy for vertical)
+    to estimate the intensity gradient at each pixel. the final
+    magnitude is the euclidean norm of gx and gy. at the edges - clamping
+    (min/max) instead of zero padding
 
     args:
-        mat: matrice cu valori grayscale
-        height: inaltimea matricei
-        width: latimea matricei
+        mat: matrix with grayscale values
+        height: matrix height
+        width: matrix width
 
     returns:
-        matrice cu aceeasi forma + valorile de magnitudine ale marginilor
+        matrix with the same shape + the edge magnitude values
     """
     gx_kernel = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
     gy_kernel = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]
@@ -119,21 +119,21 @@ def sobel(mat, height, width):
 
 def combine(mat, edges, height, width, threshold=100):
     """
-    combina matricea grayscale cu edge map_set ul, fortand marginile puternice sa fie negre
+    combines the grayscale matrix with the edge map, forcing strong edges to be black
 
-    acolo unde magnitudinea marginii depaseste threshold ul, pixelul devine 0
-    (negru pur) ca sa scoata in evidenta contururile. altfel ramane valoarea
-    grayscale originala
+    wherever the edge magnitude exceeds the threshold, the pixel becomes 0
+    (pure black) to make the contours stand out. otherwise it keeps the original
+    grayscale value
 
     args:
-        mat: matrice cu valori grayscale
-        edges: lista 2D cu magnitudinile marginilor
-        height: inaltimea matricei
-        width: latimea matricei
-        threshold: magnitudinea minima ca sa fie considerat margine, default 100
+        mat: matrix with grayscale values
+        edges: 2D list with edge magnitudes
+        height: matrix height
+        width: matrix width
+        threshold: minimum magnitude to be considered an edge, default 100
 
     returns:
-        o matrice combinand grayscale ul cu info de margini.
+        a matrix combining the grayscale with edge info.
     """
     final = []
     for i in range(height):
@@ -148,21 +148,21 @@ def combine(mat, edges, height, width, threshold=100):
 
 def resize(gray_m, width, height, new_width=100, char=0.6):
     """
-    micsoreaza o matrice grayscale la new_width, folosind nearest-neighbor
+    shrinks a grayscale matrix to new_width, using nearest-neighbor
 
-    noua inaltime se calculeaza din aspect ratio ul original, corectat cu 
-    factorul char ca sa compensez faptul ca un caracter monospace e mai inalt
-    decat lat 
+    the new height is computed from the original aspect ratio, corrected with
+    the char factor to compensate for the fact that a monospace character is taller
+    than it is wide
 
     args:
-        gray_m: matrice
-        width: latimea originala
-        height: inaltimea originala
-        new_width: latimea tinta in caractere, default 100
-        char: factor de corectie,d efault 0.6
+        gray_m: matrix
+        width: original width
+        height: original height
+        new_width: target width in characters, default 100
+        char: correction factor, default 0.6
 
     returns:
-        tuplu (final, new_width, new_height)
+        tuple (final, new_width, new_height)
     """
     ratio = height / width
     new_height = int(new_width * ratio * char)
@@ -179,35 +179,35 @@ def resize(gray_m, width, height, new_width=100, char=0.6):
 
 def map_set(gray, set = CHAR_SET):
     """
-    seteaza o singura valoare grayscale la un caracter din setul dat
+    maps a single grayscale value to a character from the given set
 
-    scaleaza valoarea grayscale intr un index din lungimea setului de 
-    caractere, deci pixelii inchisi/ deschisi ajung la capete opuse ale 
-    set ului, in functie de cum e ordonat CHAR_SET 
+    scales the grayscale value to an index into the length of the character
+    set, so dark/light pixels end up at opposite ends of the
+    set, depending on how CHAR_SET is ordered
 
     args:
-        gray: valoare grayscale in [0, 255].
-        set: string de caractere ordonate dens sparse
+        gray: grayscale value in [0, 255].
+        set: string of characters ordered dense to sparse
 
     returns:
-        un caracter care reprezinta valoarea grayscale data
+        a character representing the given grayscale value
     """
     idx = int((gray / 255) * (len(set) - 1))
     return set[idx]
 
 def convert(mat, set = CHAR_SET):
     """
-    converteste o matrice grayscale intr-un string ASCII pe mai multe linii
+    converts a grayscale matrix into a multi-line ASCII string
 
-    aplic map_set() pe fiecare valoare din matrice, rand cu rand, si unesc 
-    caracterele rezultate in linii separate prin newline
+    applies map_set() to each value in the matrix, row by row, and joins
+    the resulting characters into lines separated by newline
 
     args:
-        mat: matrice cu valori grayscale
-        set: set ul de caractere folosit la map_setare
+        mat: matrix with grayscale values
+        set: character set used for mapping
 
     returns:
-        string cu ASCII art
+        string with the ASCII art
     """
     final = []
     for row in mat:
@@ -219,15 +219,15 @@ def convert(mat, set = CHAR_SET):
 
 def size(font):
     """
-    calculeaza latimea si inaltimea in pixeli a unui singur caracter monospace
+    computes the width and height in pixels of a single monospace character
 
-    randez caracterul "A" pe o imagine pt a masura bounding box-ul
+    renders the character "A" on an image to measure the bounding box
 
     args:
-        font: obiect ImageFont incarcat din PIL
+        font: ImageFont object loaded from PIL
 
     returns:
-        tuplu (width, height) in pixeli pt un singur caracter
+        tuple (width, height) in pixels for a single character
     """
     img = Image.new("RGB", (10, 10))
     draw = ImageDraw.Draw(img)
@@ -238,20 +238,20 @@ def size(font):
 
 def image(text, font_size=10, bg_color=(255, 255, 255), text_color=(0, 0, 0)):
     """
-    randeaza un string ASCII intr o imagine PIL simpla
+    renders an ASCII string into a simple PIL image
 
-    fiecare caracter e desenat individual la o pozitie de grid calculata din
-    dimensiunile caracterului monospace, ca imaginea finala sa reproduca 
-    exact layout ul textului.
+    each character is drawn individually at a grid position computed from
+    the monospace character's dimensions, so the final image exactly
+    reproduces the text layout.
 
     args:
-        text: string ASCII art pe mai multe linii
-        font_size: marimea fontului in puncte
-        bg_color: culoarea de fundal a imaginii
-        text_color: culoarea folosita pt toate caracterele
+        text: multi-line ASCII art string
+        font_size: font size in points
+        bg_color: image background color
+        text_color: color used for all characters
 
     returns:
-        obiect PIL Image cu ASCII art ul randat
+        PIL Image object with the rendered ASCII art
     """
     lines = text.split("\n")
 
@@ -275,21 +275,21 @@ def image(text, font_size=10, bg_color=(255, 255, 255), text_color=(0, 0, 0)):
 
 def resize_rgb(pixels, width, height, new_width=100, char=0.6):
     """
-    micsoreaza datele RGB originale ca sa se potriveasca cu grid ul ASCII
+    shrinks the original RGB data to fit the ASCII grid
 
-    foloseste aceeasi logica de nearest-neighbor sampling si corectie de
-    aspect ratio ca resize(), dar lucreaza direct pe tuple uri RGB in loc de
-    valori grayscale.
+    uses the same nearest-neighbor sampling logic and aspect ratio
+    correction as resize(), but works directly on RGB tuples instead of
+    grayscale values.
 
     args:
         pixels: PixelAccess object
-        width: latimea imaginii originale
-        height: inaltimea imaginii originale
-        new_width: latimea tinta in caractere, default 100
-        char: factor de corectie a aspect ratio-ului caracterelor default 0.6
+        width: original image width
+        height: original image height
+        new_width: target width in characters, default 100
+        char: character aspect ratio correction factor, default 0.6
 
     returns:
-        tuplu (final, new_width, new_height)
+        tuple (final, new_width, new_height)
     """
     ratio = height / width
     new_height = int(new_width * ratio * char)
@@ -306,15 +306,15 @@ def resize_rgb(pixels, width, height, new_width=100, char=0.6):
 
 def invert(mat):
     """
-    inverseaza fiecare valoare dintr-o matrice grayscale 
+    inverts every value in a grayscale matrix
 
-    util pt output vazut pe fundal inchis vs deschis
+    useful for output viewed on a dark background vs a light one
 
     args:
-        mat: matrice cu valori grayscale
+        mat: matrix with grayscale values
 
     returns:
-        matrice cu fiecare valoare inversata
+        matrix with every value inverted
     """
     final = []
     for row in mat:
@@ -326,19 +326,19 @@ def invert(mat):
 
 def image_colored(text, rgb_matrix, font_size=10, bg_black=True):
     """
-    randeaza ASCII art colorat intr o imagine PIL, folosind culori per caracter
+    renders colored ASCII art into a PIL image, using per-character colors
 
-    similar cu image(), dar in loc de un singur text_color fix, fiecare
-    caracter e desenat cu culoarea lui din rgb_matrix
+    similar to image(), but instead of a single fixed text_color, each
+    character is drawn with its own color from rgb_matrix
 
     args:
-        text: string ASCII
-        rgb_matrix: lista 2D de tupluri (r, g, b)
-        font_size: marimea fontului in puncte
-        bg_black: daca True foloseste fundal negru
+        text: ASCII string
+        rgb_matrix: 2D list of (r, g, b) tuples
+        font_size: font size in points
+        bg_black: if True uses a black background
 
     returns:
-        obiect PIL Image cu ASCII art ul colorat randat
+        PIL Image object with the rendered colored ASCII art
     """
     lines = text.split("\n")
     font = ImageFont.truetype("DejaVuSansMono.ttf", font_size)
@@ -365,17 +365,17 @@ def image_colored(text, rgb_matrix, font_size=10, bg_black=True):
 
 def ascii(path, new_width=100, set=CHAR_SET, do_invert=False):
     """
-    ruleaza tot pipeline ul: incarca o imagine si o converteste in ASCII art
+    runs the whole pipeline: loads an image and converts it to ASCII art
 
     args:
-        path: calea catre imaginea sursa
-        new_width: latimea tinta a output ului ASCII in caractere
-        set: setul de caractere 
-        do_invert: daca True, inverseaza valorile grayscale inainte de procesare, default False
+        path: path to the source image
+        new_width: target ASCII output width in characters
+        set: character set
+        do_invert: if True, inverts the grayscale values before processing, default False
 
     returns:
-        tuplu (ascii_text, rgb_mat), ascii_text este stringul ASCII art rezultat
-        si rgb_mat matricea RGB micsorata aliniata la acelasi grid de caractere
+        tuple (ascii_text, rgb_mat), ascii_text is the resulting ASCII art
+        string and rgb_mat the shrunk RGB matrix aligned to the same character grid
     """
     pixels, width, height = load(path)
     rgb_mat, _, _ = resize_rgb(pixels, width, height, new_width)
@@ -384,7 +384,7 @@ def ascii(path, new_width=100, set=CHAR_SET, do_invert=False):
     gray, new_w, new_h = resize(gray, width, height, new_width)
 
     if do_invert:
-        gray = invert(gray) 
+        gray = invert(gray)
 
     gray = gray_contrast(gray)
     edges = sobel(gray, new_h, new_w)

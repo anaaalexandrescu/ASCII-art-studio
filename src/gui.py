@@ -20,10 +20,10 @@ PreviewPanel,
 # main window
 
 class MainWindow(QMainWindow):
-    """ 
-    fereastra principala a aplicatiei: leaga sidebar ul de preview,
-    porneste/opreste VideoWorker ul si apeleaza direct functiile
-    din image.py pt conversia imaginilor
+    """
+    main application window: connects the sidebar to the preview,
+    starts/stops the VideoWorker and calls the functions
+    from image.py directly for image conversion
     """
     def __init__(self):
         super().__init__()
@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
 
     def _connect_signals(self):
         """
-        leaga toate semnalele emise de sidebar de metodele coresp din MainWindow
+        connects all signals emitted by the sidebar to the corresponding methods in MainWindow
         """
         self.sidebar.open_requested.connect(self.open_file)
         self.sidebar.convert_requested.connect(self.convert)
@@ -72,20 +72,20 @@ class MainWindow(QMainWindow):
         self.sidebar.stop_requested.connect(self.stop_video)
         self.sidebar.save_requested.connect(self.save_image)
 
-    # cat de agresiv se cuantizeaza culoarea in preview ul color,
-    # ca sa avem run uri lungi si putine apeluri drawText
-    # 1 = culoare exacta 24 = compromis,
-    # 32-48 = si mai rapid
+    # how aggressively the color is quantized in the color preview,
+    # so we get long runs and fewer drawText calls
+    # 1 = exact color 24 = compromise,
+    # 32-48 = even faster
     COLOR_QUANT_STEP = 32
 
     def _render_and_show_colored(self, text, rgb_mat):
         """
-        randeaza ASCII ul colorat intr un pixmap si
-        il trimite la preview pt afisare
+        renders the colored ASCII into a pixmap and
+        sends it to the preview for display
 
         args:
-            text: stringul ASCII
-            rgb_mat: matricea de culori RGB aliniata la text
+            text: the ASCII string
+            rgb_mat: the RGB color matrix aligned with the text
         """
         pixmap = render_colored_pixmap(text, rgb_mat, self.preview.mono_font, color_step=self.COLOR_QUANT_STEP)
         self.preview.show_colored_pixmap(pixmap)
@@ -122,14 +122,14 @@ class MainWindow(QMainWindow):
 
     def convert(self, width, do_invert, is_colored):
         """
-        punctul de intrare pt conversie, apelat cand utilizatorul apasa
-        convert - ruteaza spre start_video() daca avem un video incarcat,
-        sau converteste direct imaginea statica prin image.ascii()
+        entry point for conversion, called when the user presses
+        convert - routes to start_video() if a video is loaded,
+        or directly converts the static image via image.ascii()
 
         args:
-            width: latimea ASCII in caractere
-            do_invert: daca True, inverseaza valorile grayscale
-            is_colored: daca True, afiseaza rezultatul in mod color
+            width: ASCII width in characters
+            do_invert: if True, inverts the grayscale values
+            is_colored: if True, displays the result in color mode
         """
         self.is_colored = is_colored
 
@@ -163,13 +163,13 @@ class MainWindow(QMainWindow):
 
     def start_video(self, width, do_invert, is_colored):
         """
-        opreste orice VideoWorker anterior si porneste unul nou pt
-        video_path ul curent, cu parametrii dati
+        stops any previous VideoWorker and starts a new one for the
+        current video_path, with the given parameters
 
         args:
-            width: latimea ASCII in caractere
-            do_invert: daca True, inverseaza valorile grayscale
-            is_colored: daca True, afiseaza rezultatul in mod color
+            width: ASCII width in characters
+            do_invert: if True, inverts the grayscale values
+            is_colored: if True, displays the result in color mode
         """
         self.stop_video()
         self.sidebar.set_save_enabled(False)
@@ -186,12 +186,12 @@ class MainWindow(QMainWindow):
 
     def video_frame_ready(self, text, rgb_mat):
         """
-        actualizeaza preview ul 
-        (color sau BW) si activeaza Save
+        updates the preview
+        (color or BW) and enables Save
 
         args:
-            text: stringul ASCII al cadrului curent
-            rgb_mat: matricea de culori RGB a cadrului curent
+            text: the ASCII string of the current frame
+            rgb_mat: the RGB color matrix of the current frame
         """
         if self.sender() is not self.video_worker:
             return
@@ -206,8 +206,8 @@ class MainWindow(QMainWindow):
 
     def play_video(self):
         """
-        reia un VideoWorker existent daca ruleaza deja, sau porneste
-        unul nou, citind parametrii curenti direct din sidebar
+        resumes an existing VideoWorker if it's already running, or starts
+        a new one, reading the current parameters directly from the sidebar
         """
         if not self.video_path:
             return
@@ -237,8 +237,8 @@ class MainWindow(QMainWindow):
 
     def stop_video(self):
         """
-        opreste definitiv VideoWorker ul curent si asteapta sa se termine
-        thread ul
+        permanently stops the current VideoWorker and waits for the
+        thread to finish
         """
         if self.video_worker is None:
             return
@@ -268,8 +268,8 @@ class MainWindow(QMainWindow):
 
     def save_image(self):
         """
-        salveaza rezultatul curent ca imagine
-        PNG/JPEG, folosind image.image() sau image.image_colored()
+        saves the current result as a
+        PNG/JPEG image, using image.image() or image.image_colored()
         """
         if self.video_path:
             self.save_video()
@@ -294,7 +294,7 @@ class MainWindow(QMainWindow):
             
     def closeEvent(self, event):
         """
-        opreste orice video care ruleaza inainte de a inchide fereastra
+        stops any running video before closing the window
         """
         self.stop_video()
         event.accept()

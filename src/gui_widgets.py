@@ -218,15 +218,15 @@ QStatusBar {
 
 def _quantize_channel(value, step):
     """
-    rotunjeste un singur canal de culoare (R, G sau B) la cel mai apropiat
-    multiplu de step, cu clamping la 255
+    rounds a single color channel (R, G or B) to the nearest
+    multiple of step, with clamping to 255
 
     args:
-        value: valoarea canalului 0-255
-        step: pasul de cuantizare
+        value: the channel value 0-255
+        step: the quantization step
 
     returns:
-        valoarea cuantizata, tot in 0-255
+        the quantized value, still in 0-255
     """
     half = step // 2
     bucket = (value + half) // step
@@ -237,14 +237,14 @@ def _quantize_channel(value, step):
 
 def _quantize_color(color, step):
     """
-    aplica _quantize_channel pe toate cele 3 canale ale unei culori RGB
+    applies _quantize_channel to all 3 channels of an RGB color
 
     args:
-        color: tuplu (r, g, b)
-        step: pasul de cuantizare, daca e <= 1 culoarea e returnata neschimbata
+        color: tuple (r, g, b)
+        step: the quantization step, if <= 1 the color is returned unchanged
 
     returns:
-        tuplu (r, g, b) cuantizat
+        quantized tuple (r, g, b)
     """
     if step <= 1:
         return color
@@ -253,13 +253,13 @@ def _quantize_color(color, step):
 
 def render_mono_pixmap(text, font):
     """
-    randeaza ASCII bw pe acelasi canvas/metrici ca preview ul rgb
-    QPixmap + QPainter si pentru bw, astfel incat dimensiunile
-    caracterelor sa fie identice si scroll ul sa fie gestionat de QScrollArea
+    renders bw ASCII on the same canvas/metrics as the rgb preview
+    QPixmap + QPainter for bw as well, so the character
+    dimensions are identical and scrolling is handled by QScrollArea
     """
     lines = text.split("\n")
     metrics = QFontMetrics(font)
- 
+
     char_w = max(1, metrics.horizontalAdvance("W"))
     char_h = max(1, metrics.height())
     max_line = max((len(line) for line in lines), default=0)
@@ -294,16 +294,16 @@ def render_mono_pixmap(text, font):
 
 def render_colored_pixmap(text, rgb_mat, font, color_step=24):
     """
-    deseneaza ASCII ul colorat direct pe un QImage folosind
+    draws the colored ASCII directly onto a QImage using
     QPainter
 
-    gruparea characterelorconsecutive cu aceeasi culoare 
-    intr un singur drawText ajuta pe culori plate/uniforme,
-    dar pe un cadru foto/video real aproape fiecare pixel are 
-    o culoare usor diferita de vecinul lui;
+    grouping consecutive characters with the same color
+    into a single drawText helps with flat/uniform colors,
+    but on a real photo/video frame almost every pixel has
+    a color slightly different from its neighbor;
 
-    color_step cuantizeaza fiecare canal R G B la cel mai
-    apropiat multiplu de `color_step`
+    color_step quantizes each R G B channel to the
+    nearest multiple of `color_step`
     """
     lines = text.split("\n")
     metrics = QFontMetrics(font)
@@ -365,12 +365,12 @@ def render_colored_pixmap(text, rgb_mat, font, color_step=24):
 
 class VideoWorker(QThread):
     """
-    thread separat care citeste si converteste un fisier video in ASCII,
-    cadru cu cadru, ca sa nu blocheze interfata grafica
+    separate thread that reads and converts a video file to ASCII,
+    frame by frame, so it doesn't block the GUI
 
-    emite un semnal frame_ready(text, rgb_mat) pt fiecare cadru procesat,
-    finished cand videoclipul s-a terminat sau a fost oprit, si error daca
-    apare o problema la deschidere sau la procesare
+    emits a frame_ready(text, rgb_mat) signal for each processed frame,
+    finished when the video has ended or was stopped, and error if
+    a problem occurs while opening or processing
     """
     frame_ready = pyqtSignal(str, object)
     finished = pyqtSignal()
@@ -387,13 +387,13 @@ class VideoWorker(QThread):
 
     def run(self):
         """
-        bucla principala a thread ului: citeste cadre din video, le converteste
-        in ASCII si emite frame_ready pt fiecare
+        the thread's main loop: reads frames from the video, converts
+        them to ASCII and emits frame_ready for each one
 
-        playback ul e sincronizat cu ceasul real al videoclipului,
-        nu doar cu FPS ul nominal: daca procesarea ASCII e prea lenta si ramanem
-        in urma, sarim peste cadrele acumulate cu cap.grab() ca sa nu se ajunga 
-        la a randa tot videoclipul in slow motion
+        playback is synced to the video's real clock,
+        not just the nominal FPS: if ASCII processing is too slow and we fall
+        behind, we skip the accumulated frames with cap.grab() so we don't end
+        up rendering the whole video in slow motion
         """
         cap = cv2.VideoCapture(self.path)
 
@@ -443,15 +443,15 @@ class VideoWorker(QThread):
         self.finished.emit()
 
     def pause(self):
-        """pune playback ul pe pauza, fara sa opreasca thread ul"""
+        """pauses playback without stopping the thread"""
         self.paused = True
 
     def resume(self):
-        """reia playback ul dupa o pauza"""
+        """resumes playback after a pause"""
         self.paused = False
 
     def stop(self):
-        """opreste definitiv thread ul, iese din bucla din run()"""
+        """permanently stops the thread, exits the loop in run()"""
         self.running = False
         self.paused = False
 
@@ -459,7 +459,7 @@ class VideoWorker(QThread):
 
 class SidebarPanel(QWidget):
     """
-    panoul din stanga cu toate controalele
+    the left panel with all the controls
     """
     open_requested = pyqtSignal()
     convert_requested = pyqtSignal(int, bool, bool)
@@ -561,8 +561,8 @@ class SidebarPanel(QWidget):
 
     def _on_convert_clicked(self):
         """
-        citeste valorile curente din UI (latime, invert, color), le valideaza
-        si emite convert_requested cu ele
+        reads the current values from the UI (width, invert, color), validates
+        them and emits convert_requested with them
         """
         try:
             width = int(self.width_input.text())
@@ -578,32 +578,32 @@ class SidebarPanel(QWidget):
 
     def set_video_loaded(self, enabled):
         """
-        activeaza/ dezactiveaza butoanele play si stop
+        enables/disables the play and stop buttons
         """
         self.play_button.setEnabled(enabled)
         self.stop_button.setEnabled(enabled)
 
     def set_running(self, running):
         """
-        comuta starea butoanelor play/pause
+        toggles the play/pause button states
         """
         self.pause_button.setEnabled(running)
         self.play_button.setEnabled(not running)
 
     def set_save_enabled(self, enabled):
         """
-        activeaza/dezactiveaza butonul save, dupa ce exista un rezultat de salvat
+        enables/disables the save button, once there's a result to save
         """
         self.save_button.setEnabled(enabled)
 
 class PreviewPanel(QWidget):
     """
-    preview pentru ambele moduri:
+    preview for both modes:
       - bw: QPixmap + QScrollArea
       - rgb: QPixmap + QScrollArea
 
-    ambele sunt randate cu aceleasi QFontMetrics, deci un caracter
-    are aceeasi latime si aceeasi inaltime in ambele moduri
+    both are rendered with the same QFontMetrics, so a character
+    has the same width and the same height in both modes
     """
     def __init__(self):
         super().__init__()
