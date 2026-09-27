@@ -259,7 +259,7 @@ def render_mono_pixmap(text, font):
     """
     lines = text.split("\n")
     metrics = QFontMetrics(font)
-
+ 
     char_w = max(1, metrics.horizontalAdvance("W"))
     char_h = max(1, metrics.height())
     max_line = max((len(line) for line in lines), default=0)

@@ -195,7 +195,7 @@ def test_convert_with_custom_charset():
     # vf ca parametrul set e folosit efectiv, nu doar CHAR_SET-ul default
     mat = [[0, 255]]
     result = convert(mat, set=".#")
-    assert result == ".#"
+    assert result == ".#" 
 
 def test_invert_flips_values():
     mat = [[0, 100], [255, 50]]

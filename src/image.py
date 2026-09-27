@@ -384,7 +384,7 @@ def ascii(path, new_width=100, set=CHAR_SET, do_invert=False):
     gray, new_w, new_h = resize(gray, width, height, new_width)
 
     if do_invert:
-        gray = invert(gray)
+        gray = invert(gray) 
 
     gray = gray_contrast(gray)
     edges = sobel(gray, new_h, new_w)

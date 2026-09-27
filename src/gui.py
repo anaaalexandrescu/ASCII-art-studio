@@ -20,7 +20,7 @@ PreviewPanel,
 # main window
 
 class MainWindow(QMainWindow):
-    """
+    """ 
     fereastra principala a aplicatiei: leaga sidebar ul de preview,
     porneste/opreste VideoWorker ul si apeleaza direct functiile
     din image.py pt conversia imaginilor

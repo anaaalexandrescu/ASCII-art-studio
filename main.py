@@ -6,7 +6,7 @@ from src.gui_widgets import STYLE_SHEET
 def main():
     """
     punctul de intrare al aplicatiei
- 
+
     creeaza obiectul QApplication, initializeaza si afiseaza fereastra
     principala MainWindow, apoi porneste event loop ul PyQt
     """

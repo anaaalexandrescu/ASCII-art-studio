@@ -9,7 +9,7 @@ def frame_to_ascii(frame, new_width=150, do_invert=False):
     cv2.resize cu interpolare in loc de nearest-neighbor manual
     (mai rapid), si nu incarca nimic de pe disk
     frame ul vine deja in memorie de la camera sau de la un fisier video
- 
+  
     pixels e transpus din (height, width, 3) in (width, height, 3)
     ca sa respecte pixels[x, y] folosit de image.grayscale()
  
